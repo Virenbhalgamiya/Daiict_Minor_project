@@ -144,22 +144,3 @@ Developing
 
 See `DEVELOPING.md` for additional instructions and information for developing
 an application and/or contributing to the project.
-
-
-Author
-------
-
-Gen-Ed and the included applications are by Mark Liffiton.
-
-
-Licenses
---------
-
-Gen-Ed and the included applications are licensed under the GNU Affero General
-Public License version 3 (AGPL-3.0-only).
-
-Brand icons from [Simple Icons](https://simpleicons.org/) are licensed under
-CC0-1.0.  Other icons from [Lucide](https://lucide.dev/) are licensed under the
-Lucide ISC license.
-
-For the text of these licenses, see the LICENSES directory.
