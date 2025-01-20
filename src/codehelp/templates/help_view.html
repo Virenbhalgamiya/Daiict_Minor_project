@@ -1,0 +1,199 @@
+{#
+SPDX-FileCopyrightText: 2023 Mark Liffiton <liffiton@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-only
+#}
+
+{% extends "base.html" %}
+{% from "recent_queries.html" import recent_queries %}
+
+{% block body %}
+<div class="columns is-desktop is-gapless">
+  <div class="column is-three-quarters-desktop">
+    <section class="section">
+    {% if query %}
+
+    <div class="container">
+      {% if auth['user_id'] != query.user_id %}
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">User:</label>
+        </div>
+        <div class="field-body">
+          {{ query.display_name }}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">When:</label>
+        </div>
+        <div class="field-body">
+          {{ query.query_time | localtime }}
+        </div>
+      </div>
+
+      {% if query.context_name %}
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">Context:</label>
+        </div>
+        <div class="field-body">
+          {{ query.context_name }}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="field is-horizontal">
+        <div class="field-label {% if query.code %}is-normal{% endif %}">
+          <label class="label">Prompt :</label>
+        </div>
+        <div class="field-body" style="overflow: auto; max-height: 30em;">
+          {% if query.code %}
+            <pre>
+              {{- query.code -}}
+            </pre>
+          {% else %}
+            <i class="has-text-grey-light">none</i>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+        <div class="field-label {% if query.error %}is-normal{% endif %}">
+          <label class="label">Remarks:</label>
+        </div>
+        <div class="field-body" style="overflow-x: auto;">
+          {% if query.error %}
+            <pre>
+              {{- query.error -}}
+            </pre>
+          {% else %}
+            <i class="has-text-grey-light">none</i>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">Question:</label>
+        </div>
+        <div class="field-body" style="white-space: pre-wrap;">
+          {%- if query.issue -%}
+            {{- query.issue | trim -}}
+          {%- else -%}
+            <i class="has-text-grey-light">none</i>
+          {%- endif -%}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card mt-5">
+      <div class="card-content p-2 pl-5">
+        <div class="content">
+          <h1><span class="title is-size-4">Response</span> <span class="subtitle ml-5 is-italic">Remember: It will not always be correct!</span></h1>
+          {% if 'error' in responses %}
+            <div class="notification is-danger">
+              {{ responses['error'] | markdown }}
+            </div>
+          {% endif %}
+          {% if 'insufficient' in responses %}
+            <div class="message is-warning">
+              <div class="message-header">
+                <p>Please clarify</p>
+              </div>
+              <div class="message-body">
+                {{ responses['insufficient'] | markdown }}
+                <p style="border-top: solid 1px #c90; padding-top: 0.75rem;">An <i>attempt</i> at a response is below, but you can <a href="{{ url_for('.help_form', query_id=query.id) }}" class="button is-link is-outlined is-rounded p-2 ml-1 mr-1" style="vertical-align: baseline; height: 2rem;">Retry</a> this query and provide additional details or clarification to receive a more helpful response.
+                </p>
+              </div>
+            </div>
+          {% endif %}
+          {% if 'main' in responses %}
+            {{ responses['main'] | markdown }}
+          {% endif %}
+        </div>
+      </div>
+
+      {% if auth['user_id'] == query.user_id and 'main' in responses %}
+      <div class="card-content p-2 pl-5" style="background: #e8e8e8;" x-data="{helpful: {{"null" if query.helpful == None else query.helpful}}}">
+        <script type="text/javascript">
+          function post_helpful(value) {
+            fetch("{{url_for('helper.post_helpful')}}", {
+              method: "POST",
+              body: `id={{query.id}}&value=${value}`,
+              headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            });
+          }
+        </script>
+        <div class="level is-size-6">
+          <div class="level-left">
+            <div class="level-item is-italic">Was this helpful?</div>
+            <div class="level-item">
+              <button class="button is-success" x-bind:class="helpful===1 ? '' : 'is-light'" x-on:click="helpful=1; post_helpful(1);">
+                <span class="icon">
+                  <svg aria-hidden="true"><use href="#svg_thumbsup" /></svg>
+                </span>
+                <span>
+                  Yes
+                </span>
+              </button>
+            </div>
+            <div class="level-item">
+              <button class="button is-danger " x-bind:class="helpful===0 ? '' : 'is-light'" x-on:click="helpful=0; post_helpful(0);">
+                <span class="icon">
+                  <svg aria-hidden="true"><use href="#svg_thumbsdown" /></svg>
+                </span>
+                <span>
+                  No
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if auth['is_tester'] and 'main' in responses %}
+        <div class="card-content content p-2 pl-5">
+          <h2 class="is-size-5">Related Topics</h2>
+          {% if topics %}
+            {% include 'topics_fragment.html' %}
+          {% else %}
+            <div
+              x-data="{topics_fragment: '<span class=\'loader m-4\' style=\'font-size: 200%\'></span>'}"
+              x-html="topics_fragment"
+              x-init="
+                fetch('{{ url_for('.get_topics_html', query_id=query.id) }}')
+                  .then(response => response.text())
+                  .then(text => { topics_fragment = text })
+              "
+            >
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="container mt-6">
+      <a href="{{ url_for('.help_form') }}" class="button is-link is-outlined is-rounded p-2 ml-1 mr-1" style="vertical-align: baseline; height: 2rem;">Ask another question</a>
+      or
+      <a href="{{ url_for('.help_form', query_id=query.id) }}" class="button is-link is-outlined is-rounded p-2 ml-1 mr-1" style="vertical-align: baseline; height: 2rem;">Retry this query</a>
+    </div>
+
+    </section>
+
+
+
+  </div>
+
+  <div class="column has-background-light">
+    {{ recent_queries(history) }}
+  </div>
+
+</div>
+
+{% endblock %}

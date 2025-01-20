@@ -1,0 +1,71 @@
+{#
+SPDX-FileCopyrightText: 2023 Mark Liffiton <liffiton@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-only
+#}
+
+{% macro chat_component(chat_messages, msg_input=False) -%}
+  <style type="text/css">
+    .chat_grid {
+      display: grid;
+      grid-template-columns: 1fr 6fr;
+      row-gap: 0.5em;
+    }
+    .chat_role {
+      padding: 0.5em;
+      padding-left: 0;
+      font-style: italic;
+      text-align: right;
+    }
+    .chat_role_assistant {
+      color: #358;
+    }
+    .chat_role_user {
+      color: #834;
+    }
+    .chat_message {
+      overflow-x: auto;
+      max-width: 50em;
+      padding: 0.5em 0.5em 0.5em 1em;
+    }
+    .chat_message_user {
+      border-left: solid 3px #a35;
+      background: #a351;
+    }
+    .chat_message_assistant {
+      border-left: solid 3px #47a;
+    }
+  </style>
+
+  <div class="m-3 chat_grid content">
+    {% for message in chat_messages %}
+      <div class="chat_role chat_role_{{message['role']}}">
+        {{ 'You' if message['role'] == 'user' else 'Tutor' }}
+      </div>
+      <div class="chat_message chat_message_{{message['role']}}">
+        {{message['content'] | markdown}}
+      </div>
+    {% endfor %}
+    {% if msg_input %}
+      <div class="chat_role chat_role_user">
+        You
+      </div>
+      <div class="chat_message chat_message_user" style="padding-right: 0.5em">
+        <div class="field has-addons">
+          <div class="control is-expanded">
+            <textarea class="textarea is-link" rows=2 name="message" placeholder="Send a message.  Press enter to send, shift-enter for a new line." autofocus x-bind:disabled="loading" @keydown.enter="if (!$event.shiftKey) {$event.target.form.submit(); loading=true; $event.preventDefault();}"></textarea>
+          </div>
+          <div class="control">
+            <button
+              class="button is-link"
+              style="height: 100%;"
+              x-bind:class="loading ? 'is-loading' : ''"
+              type="submit" >
+            Send
+            </button>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{%- endmacro %}

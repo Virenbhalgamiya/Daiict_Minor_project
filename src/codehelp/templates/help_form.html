@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% from "recent_queries.html" import recent_queries %}
+
+{% block body %}
+<div class="columns is-desktop is-gapless">
+  <div class="column is-three-quarters-desktop">
+    <section class="section">
+
+    <div class="container" style="display: flex;justify-content: start;">
+      <!-- SOLID principles overview -->
+      <div style="width: 29rem;padding: 20px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9; margin-bottom: 20px;">
+        <h3><strong>SOLID Principles</strong></h3>
+        <p>The SOLID principles are a set of design principles that improve software readability, maintainability, and flexibility. Here's a quick overview:</p>
+        <ul>
+          <li><strong>S - Single Responsibility Principle</strong>: A class should have only one reason to change, meaning it should only have one job or responsibility.</li>
+          <li><strong>O - Open/Closed Principle</strong>: Software entities should be open for extension but closed for modification. This allows new functionality to be added without changing existing code.</li>
+          <li><strong>L - Liskov Substitution Principle</strong>: Subtypes must be substitutable for their base types. Derived classes should be able to replace their base classes without affecting the application's functionality.</li>
+          <li><strong>I - Interface Segregation Principle</strong>: A client should not be forced to depend on interfaces it does not use. This encourages smaller, more specific interfaces over general-purpose ones.</li>
+          <li><strong>D - Dependency Inversion Principle</strong>: High-level modules should not depend on low-level modules. Both should depend on abstractions, allowing for flexible and modular designs.</li>
+        </ul>
+      </div>
+      
+      <!-- Form content starts here -->
+      <form class="wide-labels" style="width: 75%;" action="{{url_for('helper.help_request')}}" method="post" x-data="{loading: false}" x-on:pageshow.window="loading = false" x-on:submit.debounce.10ms="loading = true">
+
+      {% if auth['class_name'] %}
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">Class:</label>
+        </div>
+        <div class="field-body">
+          {{ auth['class_name'] }}
+        </div>
+      </div>
+      {% elif llm.tokens_remaining != None %}
+      <div class="notification is-size-5">
+        <strong>Using free queries:</strong>
+        {{ llm.tokens_remaining }} queries remaining.
+        <button class="button is-small is-rounded p-2 ml-3" type="button" onClick="document.getElementById('free_query_dialog').showModal();">what's this?</button>
+      </div>
+      {% include "free_query_dialog.html" %}
+      {% endif %}
+
+      {% if contexts %}
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label" for="context">Context:</label>
+        </div>
+        {% include "context_chooser.html" %}
+      </div>
+      {% endif %}
+
+      <div class="field is-horizontal">
+        <div class="field-label is-normal"> <label class="label" for="code">Prompt Here:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <textarea class="textarea is-family-monospace" name="code" id="code" x-bind:disabled="loading" rows=10>{{ query.code }}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label" for="error">Remarks:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <textarea class="textarea" name="error" id="error" x-bind:disabled="loading" rows=4>{{ query.error }}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label" for="issue">Question:</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <textarea class="textarea" name="issue" id="issue" x-bind:disabled="loading" rows=6>{{ query.issue }}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+        <div class="field-label is-normal"><!-- spacing --></div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <button
+                class="button is-link"
+                x-bind:class="loading ? 'is-loading' : ''"
+                type="submit" >
+                  Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+    </div>
+
+    </section>
+
+  </div>
+
+  <div class="column has-background-light">
+    {{ recent_queries(history) }}
+  </div>
+
+</div>
+
+{% endblock %}

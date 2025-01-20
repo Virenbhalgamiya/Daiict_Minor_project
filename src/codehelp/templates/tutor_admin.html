@@ -1,0 +1,25 @@
+{#
+SPDX-FileCopyrightText: 2023 Mark Liffiton <liffiton@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-only
+#}
+
+{% extends "admin_base.html" %}
+{% from "tables.html" import datatable %}
+{% from "chat_component.html" import chat_component %}
+
+{% block admin_body %}
+  <div class="columns is-multiline is-desktop">
+    <div class="column is-7-desktop is-4-fullhd">
+      <h1 class="is-size-3">Tutor Chats</h1>
+      {{ datatable('chats', [('id', 'id'), ('user', 'display_name'), ('topic', 'topic'), ('user messages', 'user_msgs', 'r')], chats, link_col=0, link_template='${value}') }}
+    </div>
+    <div class="column is-full-widescreen is-8-fullhd">
+      {% if chat_row %}
+        <h1 class="is-size-4">User: {{chat_row['display_name']}}</h1>
+        <h1 class="is-size-4">Topic: {{chat_row['topic']}}</h1>
+        {{ chat_component(chat) }}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

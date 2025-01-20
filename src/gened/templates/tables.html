@@ -1,0 +1,96 @@
+{#
+SPDX-FileCopyrightText: 2023 Mark Liffiton <liffiton@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-only
+#}
+
+{% macro datatable(name, columns, data, hidden_cols=[], link_col="", link_template=None, extra_links=[], csv_link="") -%}
+  <style type="text/css">
+  {% for col in columns %}
+    {% if col | length > 2 and (col[2] == 'r' or col[2] == 'b') %}
+    table#tbl_{{name}} tr td:nth-child({{loop.index - (hidden_cols | length)}}), 
+    table#tbl_{{name}} thead th:nth-child({{loop.index - (hidden_cols | length)}}) {
+      text-align: right;
+    }
+    {% endif %}
+  {% endfor %}
+  {% if extra_links %}
+    table#tbl_{{name}} tr td:nth-child({{columns | length + 1}}) {
+      text-align: right;
+    }
+    table#tbl_{{name}} .button {
+      height: 1.5em;
+      vertical-align: text-bottom;
+    }
+  {% endif %}
+  </style>
+  <div x-data="{remove_item: {id: -1, type: 'None', data: {}}}">
+  <table id="tbl_{{name}}" class="{{ 'row_selectable' if (link_col != '') else '' }}">
+    <thead>
+      <tr>
+      {% for col in columns %}
+        <th {{ "data-hidden=true" if col[0] in hidden_cols else '' }}>{{ col[0] }}</th>
+      {% endfor %}
+      {% if extra_links %}
+        <th data-sortable="False" data-searchable="False"></th>
+      {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in data %}
+        <tr>
+          {% for col in columns %}
+            <td>
+            {%- if 'time' in col[1] -%}
+              {{ row[col[1]] | localtime }}
+            {%- elif col[1] == 'display_name' -%}
+              {{ row | user_cell }}
+            {%- elif col[1] == 'response_text' -%}
+              {{ row[col[1]] | fmt_response_txt }}
+            {%- elif col | length > 2 and col[2] == 'b' -%}
+              <input type="checkbox" {{ 'checked' if row[col[1]] else '' }} onclick="set_bool_{{col[1]}}({{row.role_id}}, this.checked)">
+            {%- else -%}
+              {{ row[col[1]] | tbl_cell }}
+            {%- endif -%}
+            </td>
+          {% endfor %}
+          {% if extra_links %}
+            <td>
+            {% for link in extra_links %}
+              {% if 'icon' in link %}
+                <a class="has-text-grey icon icon-text" title="{{ link['text'] }}" href="{{ url_for(link['handler'], **{link['param']: row['id']}) }}">
+                  <svg aria-hidden="true"><use href="#svg_{{ link['icon'] }}" /></svg>
+                </a>
+              {% else %}
+                <a class="button is-warning is-small p-1" href="{{ url_for(link['handler'], **{link['param']: row['id']}) }}">{{ link['text'] }}</a>
+              {% endif %}
+            {% endfor %}
+            </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <script type="text/javascript">
+    {% for col in columns %}
+      {% if col | length > 2 and col[2] == 'b' %}
+        // handler for a 'b'ool column
+        function set_bool_{{col[1]}}(id, val) {
+          const int_val = val ? 1 : 0;
+          const url = `{{url_for(col[3])}}/${id}/${int_val}`;
+          fetch(url, {method: "POST"})
+            .then(response => response.text())
+            .then(text => {
+              if (text !== 'okay') {
+                alert(`Error: ${text}\nURL: ${url}`);
+              }
+            }
+          );
+        }
+      {% endif %}
+    {% endfor %}
+
+    initTable("tbl_{{name}}", {{data | length}}, "{{link_col}}", value => `{{link_template}}`, "{{csv_link}}");
+  </script>
+  </div>
+{%- endmacro %}

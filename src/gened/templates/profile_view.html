@@ -1,0 +1,146 @@
+{#
+SPDX-FileCopyrightText: 2023 Mark Liffiton <liffiton@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-only
+#}
+
+{% extends "base.html" %}
+
+{% block body %}
+<style type="text/css">
+dl.profile { display: grid; grid-template-columns: minmax(min-content, max-content) 1fr; gap: 1em; }
+dl.profile dt { font-weight: bold; text-align: right; }
+dl.profile dd { margin: 0; }
+</style>
+
+<section class="section">
+  <div class="container content is-size-5">
+    <h1 class="title">Your Profile</h1>
+    <dl class="profile">
+      {% if user.full_name %}
+        <dt>Full Name:</dt>
+        <dd>{{ user.full_name }}</dd>
+      {% endif %}
+      {% if user.email %}
+        <dt>Email:</dt>
+        <dd>{{ user.email }}</dd>
+      {% endif %}
+      {% if user.auth_name %}
+        <dt>{{ user.provider_name | title }} username:</dt>
+        <dd>{{ user.auth_name }}</dd>
+      {% endif %}
+      {% if user.is_admin %}
+        <dt></dt>
+        <dd class="icon-text has-text-danger">
+          <span class="icon">
+            <svg aria-hidden="true"><use href="#svg_admin" /></svg>
+          </span>
+          <span>Admin</span>
+        </dd>
+      {% endif %}
+      {% if user.is_tester %}
+        <dt></dt>
+        <dd class="icon-text has-text-success">
+          <span class="icon">
+            <svg aria-hidden="true"><use href="#svg_flask" /></svg>
+          </span>
+          <span>Tester</span>
+        </dd>
+      {% endif %}
+      <dt>Queries:</dt>
+      <dd>{{ user.num_queries }} total, {{ user.num_recent_queries }} in the past week.</dd>
+      {% if not auth['role'] %}
+      <dt>Free Queries:</dt>
+      <dd>
+        {{ user.query_tokens }} remaining.
+        <button class="button is-small is-rounded p-2 ml-3" type="button" onClick="document.getElementById('free_query_dialog').showModal();">what's this?</span>
+      </dd>
+      {% endif %}
+    </dl>
+    <h2 class="title is-size-3">
+      Classes
+      {% if user.provider_name not in ['lti', 'demo'] %}
+        <button class="button ml-5 icon-text is-light is-link" onclick="document.querySelector('#new_class_dialog').showModal()">
+            <span class="icon">
+                <svg aria-hidden="true"><use href="#svg_plus" /></svg>
+            </span>
+            <span>Create new class</span>
+        </button>
+      {% endif %}
+    </h2>
+    <dl class="profile">
+      <dt>Current:</dt>
+      {% if auth['role'] %}
+        <dd>{{ auth['class_name'] }} ({{ auth['role'] }})</dd>
+      {% else %}
+        <dd>None active.</dd>
+      {% endif %}
+
+      {% if other_classes %}
+        <dt>Other:</dt>
+        <dd>
+          {% for class in other_classes %}
+          <p>
+            {{ class.name }} ({{ class.role }})
+            <a href="{{ url_for("classes.switch_class_handler", class_id=class.id) }}" class="button is-link is-small is-rounded ml-3" style="vertical-align: center;">
+              Switch to
+            </a>
+          </p>
+          {% endfor %}
+        </dd>
+      {% endif %}
+
+      {% if archived_classes %}
+        <dt>Archived:</dt>
+        <dd>
+          {% for class in archived_classes %}
+          <p>
+            {{ class.name }} ({{ class.role }})
+            <a href="{{ url_for("classes.switch_class_handler", class_id=class.id) }}" class="button is-link is-small is-rounded ml-3" style="vertical-align: center;">
+              Switch to
+            </a>
+          </p>
+          {% endfor %}
+        </dd>
+      {% endif %}
+    </dl>
+
+  </div>
+  {% if user.provider_name not in ['lti', 'demo'] %}
+    <dialog id="new_class_dialog" style="width: 75%; min-width: min(32em, 100vw);">
+      <div class="content box">
+        <h2>Create a New Class</h2>
+        <p>You can create a class, attach an OpenAI API key to it, and invite others to join it as students.  You will be given the 'instructor' role in the class, and you will be able to configure it, control access and registration, and see all queries from students who join.</p>
+        <form action="{{url_for('classes.create_class')}}" method="post">
+          <div class="field">
+            <label class="label is-size-5" for="class_name">Class Name:</label>
+            <div class="control">
+              <input class="input" required autofocus name="class_name" id="class_name">
+            </div>
+          </div>
+          <div class="field">
+            <label class="label is-size-5" for="openai_key">
+              OpenAI API Key:
+            </label>
+            <div class="control">
+              <input class="input" name="openai_key" id="openai_key">
+            </div>
+            <p>(The API key can be left blank for now, but you will need to add one to the class to submit queries.)</p>
+          </div>
+          <div class="field is-grouped">
+            <div class="control">
+              <button class="button is-link" type="submit">Submit</button>
+            </div>
+            <div class="control">
+              <button class="button" type="submit" formnovalidate formmethod="dialog">Cancel</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </dialog>
+  {% endif %}
+  {% if not auth['role'] %}
+    {% include "free_query_dialog.html" %}
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,142 @@
+{#
+SPDX-FileCopyrightText: 2023 Mark Liffiton <liffiton@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-only
+#}
+
+{% extends "base.html" %}
+{% from "recent_queries.html" import recent_queries %}
+
+{% block body %}
+<div class="columns is-desktop is-gapless">
+  <div class="column is-three-quarters-desktop">
+    <section class="section">
+    {% if query %}
+
+    <div class="container">
+      {% if auth['user_id'] != query.user_id %}
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">User:</label>
+        </div>
+        <div class="field-body">
+          {{ query.display_name }}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">When:</label>
+        </div>
+        <div class="field-body">
+          {{ query.query_time | localtime }}
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">Assignment:</label>
+        </div>
+        <div class="field-body">
+          {{- query.assignment -}}
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+        <div class="field-label">
+          <label class="label">Topics:</label>
+        </div>
+        <div class="field-body">
+            {{- query.topics -}}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card mt-5">
+      <div class="card-content">
+        <div class="content">
+          <p><span class="title is-size-4">Response</span></p>
+          {% if 'error' in responses %}
+            <div class="notification is-danger">
+              {{ responses['error'] | markdown }}
+            </div>
+          {% endif %}
+          {% if 'insufficient' in responses %}
+            <div class="message is-warning">
+              <div class="message-header">
+                <p>Please clarify</p>
+              </div>
+              <div class="message-body">
+                {{ responses['insufficient'] | markdown }}
+                <p style="border-top: solid 1px #c90; padding-top: 0.75rem;">An <i>attempt</i> at a response is below, but you can <a href="/ideas/{{query.id}}" class="button is-link is-outlined is-rounded p-2 ml-1 mr-1" style="vertical-align: baseline; height: 2rem;">Retry</a> this query and provide additional details or clarification to receive a more helpful response.
+                </p>
+              </div>
+            </div>
+          {% endif %}
+          {% if 'main' in responses %}
+            {{ responses['main'] | markdown }}
+          {% endif %}
+        </div>
+      </div>
+
+      {% if auth['user_id'] == query.user_id and 'main' in responses %}
+      <div class="card-content p-2 pl-5" style="background: #e5e5e5;" x-data="{helpful: {{"null" if query.helpful == None else query.helpful}}}">
+        <script type="text/javascript">
+          function post_helpful(value) {
+            fetch("{{url_for('helper.post_helpful')}}", {
+              method: "POST",
+              body: `id={{query.id}}&value=${value}`,
+              headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            });
+          }
+        </script>
+        <div class="level is-size-6">
+          <div class="level-left">
+            <div class="level-item is-italic">Was this helpful?</div>
+            <div class="level-item">
+              <button class="button is-success" x-bind:class="helpful===1 ? '' : 'is-light'" x-on:click="helpful=1; post_helpful(1);">
+                <span class="icon">
+                  <svg aria-hidden="true"><use href="#svg_thumbsup" /></svg>
+                </span>
+                <span>
+                  Yes
+                </span>
+              </button>
+            </div>
+            <div class="level-item">
+              <button class="button is-danger " x-bind:class="helpful===0 ? '' : 'is-light'" x-on:click="helpful=0; post_helpful(0);">
+                <span class="icon">
+                  <svg aria-hidden="true"><use href="#svg_thumbsdown" /></svg>
+                </span>
+                <span>
+                  No
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    {% endif %}
+
+    <div class="container mt-6">
+      <a href="/ideas/" class="button is-link is-outlined is-rounded p-2 ml-1 mr-1" style="vertical-align: baseline; height: 2rem;">Start again</a>
+      or
+      <a href="/ideas/{{query.id}}" class="button is-link is-outlined is-rounded p-2 ml-1 mr-1" style="vertical-align: baseline; height: 2rem;">Retry this query</a>
+    </div>
+
+    </section>
+
+  </div>
+
+  <div class="column has-background-light">
+    {{ recent_queries(history) }}
+  </div>
+
+</div>
+
+{% endblock %}

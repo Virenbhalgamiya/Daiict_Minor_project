@@ -1,0 +1,67 @@
+{#
+SPDX-FileCopyrightText: 2023 Mark Liffiton <liffiton@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-only
+#}
+
+{% extends "base.html" %}
+{% from "recent_chats.html" import recent_chats %}
+
+{% block body %}
+<div class="columns is-desktop is-gapless">
+
+  <div class="column is-three-quarters-desktop">
+    <section class="section">
+      <div class="container">
+        <h1 class="title">Start a new Tutor chat</h1>
+
+        <form action="{{url_for('tutor.start_chat')}}" method="post">
+
+          <div class="field is-horizontal">
+            <div class="field-label is-normal">
+              <label class="label" for="topic">Topic:</label>
+            </div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control">
+                  <input class="input" name="topic" id="topic">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% if contexts %}
+          <div class="field is-horizontal">
+            <div class="field-label {% if contexts | length > 1 %}is-normal{% endif %}">
+              <label class="label" for="context">Context:</label>
+            </div>
+            {% include "context_chooser.html" %}
+          </div>
+          {% endif %}
+
+          <div class="field is-horizontal">
+            <div class="field-label is-normal"><!-- spacing --></div>
+            <div class="field-body">
+              <div class="field">
+                <div class="control">
+                  <button class="button is-link" type="submit">
+                    Submit
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+    </section>
+  </div>
+
+  <div class="column has-background-light">
+    {{ recent_chats(chat_history) }}
+  </div>
+
+</div>
+
+{% endblock %}

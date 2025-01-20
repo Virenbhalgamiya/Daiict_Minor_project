@@ -1,0 +1,186 @@
+{#
+SPDX-FileCopyrightText: 2023 Mark Liffiton <liffiton@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-only
+#}
+
+{% extends "base.html" %}
+
+{% block head %}
+  <meta name="description" content="SoftEngStudio is an automated teaching assistant for coding and CS powered by large language models with guardrails.  It acts as an automated tutor, supporting students with guidance and explanations without providing solution code.">
+{% endblock %}
+
+{% block body %}
+<section class="hero">
+  <div class="hero-body" style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap;">
+    <svg aria-hidden="true" style="width: 20vw; min-width: 10em; max-height: 200px; flex: initial;" viewBox="0 0 14 10"><use href="#svg_app_logo" /></svg>
+    <h1 class="is-size-2 has-text-centered" style="flex: initial;">
+      <strong>SoftEngStudio</strong> is an <strong class="has-text-success">Automated Teaching Assistant</strong><br>
+      for <strong class="has-text-info">Coding and Computer Science</strong>.
+    </h1>
+  </div>
+</section>
+<section class="hero has-background-link">
+  <div class="hero-body p-3 content has-text-white is-size-4">
+    <div style="display: flex; justify-content: center; gap: 1em; flex-wrap: wrap;">
+      <h2 class="has-text-white">Ask it...</h2>
+      <div>
+        <p>... how to start writing a program.</p>
+        <p>... to explain a confusing error message.</p>
+        <p>... why your code isn't working correctly.</p>
+        <p>... how to use a specific feature of your current language or framework.</p>
+        <p>... a conceptual question about your course content.</p>
+      </div>
+    </div>
+    <p class="has-text-centered mt-5 mb-3">
+    {% if auth['user_id'] %}
+      <a class="button is-link is-light is-rounded is-size-4" href="{{ url_for('helper.help_form') }}">
+        Try it now!
+      </a>
+    {% else %}
+      <a class="button is-link is-light is-rounded is-size-4" href="{{ url_for('auth.login') }}">
+        Sign in to try it free.
+      </a>
+    {% endif %}
+    </p>
+  </div>
+</section>
+<section class="section p-5">
+  <div class="container" style="max-width: 45em;">
+        <div class="box content is-size-5">
+          <h2>For Instructors</h2>
+          <p>SoftEngStudio helps your students <strong>without writing code</strong> for them.  It is made specifically to guide and explain but not provide solution code.</p>
+          <ul>
+            <li><strong>Accessible Support</strong> &mdash; It is always available, whenever your students are working, with immediate responses.</li>
+            <li><strong>Tailored Responses</strong> &mdash; You can provide context to tailor responses to your class or even individual assignments, matching your students' needs and exactly what they are working on.</li>
+            <li><strong>Valuable Insights</strong> &mdash; Quickly see where your students are having trouble and what they're asking.</li>
+            <li><strong>Low Cost</strong> &mdash; Each student query costs roughly US$0.01 (see <a href="#costs">costs</a> below).</li>
+            <li><strong>Simple Integration</strong> &mdash; SoftEngStudio easily fits into any existing course as a complement to existing support systems.</li>
+          </ul>
+          <p>SoftEngStudio is shared with everyone in your class with a simple link.  There are two options:</p>
+          <div class="pl-5">
+            <a class="button button-inline is-link is-size-5" href="https://docs.google.com/forms/d/e/1FAIpQLSfsOZteMbIlIN5_MPZF-_Z-f9LwfZpfrhPOVfqcGjeJCtxHHQ/viewform?usp=sf_link">
+              Request an LMS Connection
+            </a> to connect from an LMS like Canvas, Moodle, etc.
+            <ul class="mt-1 mb-4">
+              <li>Everyone will sign in <b>automatically</b> (no separate login) via a link from your course page.</li>
+              <li>Takes some time to set up, and may require support from your LMS administrator.</li>
+            </ul>
+            {% if auth['user_id'] and auth['auth_provider'] != 'demo' %}
+              <a class="button button-inline is-link is-size-5" href="{{ url_for("profile.main") }}">Go to your Profile page</a> to manually create a class.
+            {% else %}
+              <a class="button button-inline is-link is-size-5" href="{{ url_for("auth.login", next=url_for("profile.main")) }}">Sign in using Google, GitHub, or Microsoft</a> and manually create a class from your profile page.
+            {% endif %}
+            <ul class="mt-1 mb-4">
+              <li>You will share an access link, and everyone will sign in using a Google, GitHub, or Microsoft account.</li>
+              <li>Can be set up in less than ten minutes.</li>
+            </ul>
+          </div>
+          <p><a href="{{ url_for("docs.main") }}">The documentation</a> provides more details.</p>
+        </div>
+
+        <script type="text/Javascript">
+          const examples = [
+            {
+              code: "def character_remover(word, character):\n    word = word.remove(character)\n    return word",
+              error: "Attribute Error",
+              issue: "I want this function to print the word, excluding the character.",
+              response: "<p>The error message you are seeing is an Attribute Error, which means that the object you are trying to access does not have the attribute or method you are trying to use. In this case, the object is the string <code>word</code> and the attribute you are trying to use is <code>remove()</code>. The <code>remove()</code> method is not a valid method for strings, so you are getting this error.</p><p>You can use the <code>replace()</code> method instead. This method takes two parameters: the substring you want to replace and the substring you want to replace it with. In this case, you want to replace the character with an empty string. To do this, you can pass an empty string as the second parameter to the <code>replace()</code> method. This will remove the character from the string.</p><p>For example, if you have a string <code>word = &#39;Hello&#39;</code> and a character <code>character = &#39;l&#39;</code>, you can remove the character from the string by calling <code>word.replace(character, &#39;&#39;)</code>. This will return a new string with the character removed, <code>&#39;Heo&#39;</code>.</p>",
+            },
+            {
+              code: "",
+              error: "",
+              issue: "How do I write code to evaluate whether an integer is a prime number?",
+              response: "<p>To determine whether an integer is a prime number, you can use a loop to check if it is divisible by any number other than 1 and itself. One way to do this is to loop through all numbers from 2 to the integer&#39;s square root, checking if the integer is divisible by each number. If it is divisible by any number, it is not a prime number. Otherwise, it is a prime number.</p><p>It&#39;s important to note that there are more efficient algorithms for checking prime numbers, but this approach should work for small integers.</p><p>Remember to consider edge cases, such as negative integers and 0 or 1, which are not prime numbers.</p><p>Let me know if you have any further questions or if there&#39;s anything else I can help you with!</p>",
+            },
+            {
+              code: "class Gamer:\n    def __init__(name):\n        self.name = name\n\n    def game():\n        print(f\"I am {self.name}\")",
+              error: "TypeError: Gamer.__init__() takes 1 positional argument but 2 were given",
+              issue: "I'm trying to make a class that is assigned a name, but I am getting an error.",
+              response: "<p>Thank you for reaching out for assistance with your Python code. Based on the error message you provided, it seems that the issue is with the <code>__init__</code> method in your <code>Gamer</code> class. The error message is telling you that this method takes only one argument, but you are passing two arguments to it. </p><p>In Python, the <code>__init__</code> method is a special method that is called when an object is created from a class. It is used to initialize the object's attributes. When defining the <code>__init__</code> method, you need to include the <code>self</code> parameter as the first parameter, which refers to the object being created. </p><p>In your code, you have only included the <code>name</code> parameter in the <code>__init__</code> method, but you have not included the <code>self</code> parameter. This is causing the error message you are seeing. To fix this, you need to add the <code>self</code> parameter as the first parameter in the <code>__init__</code> method. </p><p>I hope this explanation helps you understand the issue and how to fix it. Let me know if you have any further questions or need additional assistance.</p>",
+            },
+            {
+              code: "",
+              error: "",
+              issue: "Write a while loop that starts at the last character in the string and works its way backwards to the first character in the string, printing each letter on a separate line, except backwards.",
+              response: "<p>You can use a <code>while</code> loop to iterate over the characters in the string in reverse order. To do this, you can use the <code>len()</code> function to get the length of the string, and use the <code>range()</code> function to generate a sequence of numbers from the length of the string down to 0. Then you can use the <code>str[index]</code> syntax to access each character in the string. </p><p>To help you understand how this works, think about the following example: </p><p>Say you have a string <code>my_str = \"Hello World\"</code>. You can use the <code>len()</code> function to get the length of the string, which is 11. Then you can use the <code>range()</code> function to generate a sequence of numbers from 11 down to 0. This sequence of numbers will represent the indices of the characters in the string. Finally, you can use the <code>str[index]</code> syntax to access each character in the string. </p><p>Using this approach, you can iterate over the characters in the string in reverse order. This will print out each character in the string on a separate line, except backwards.</p>",
+            },
+          ];
+        </script>
+        <div class="box" x-data="{cur: 0}">
+          <div class="content">
+            <div style="display: flex; flex-wrap: wrap;">
+              <h1 class="title mb-0 mr-6">
+                Examples:
+              </h1>
+              <div>
+                <a role="button" class="button is-link is-light" @click="cur = (cur === 0) ? examples.length-1 : cur-1">&lt;</a>
+                <template x-for="i in examples.length">
+                  <a role="button" x-text="i" class="button ml-1 is-link is-light" :style="{'border-bottom': (cur === i-1) && '4px solid #60c'}" @click="cur = i-1"></a>
+                </template>
+                <a role="button" class="button ml-1 is-link is-light" @click="cur = (cur+1) % examples.length">&gt;</a>
+              </div>
+            </div>
+            <hr>
+            <div class="field is-horizontal" x-show="examples[cur]['code']">
+              <div class="field-label is-normal">
+                <label class="label">Code:</label>
+              </div>
+              <div class="field-body" style="overflow-x: auto">
+                <pre x-text="examples[cur]['code']"></pre>
+              </div>
+            </div>
+            <div class="field is-horizontal" x-show="examples[cur]['error']">
+              <div class="field-label is-normal">
+                <label class="label">Error:</label>
+              </div>
+              <div class="field-body" style="overflow-x: auto">
+                <pre x-text="examples[cur]['error']"></pre>
+              </div>
+            </div>
+            <div class="field is-horizontal" x-show="examples[cur]['issue']">
+              <div class="field-label">
+                <label class="label">Issue / Question:</label>
+              </div>
+              <div class="field-body">
+                <div x-html="examples[cur]['issue']"></div>
+              </div>
+            </div>
+            <hr>
+            <div class="field is-horizontal">
+              <div class="field-label">
+                <label class="label">SoftEngStudio's Response:</label>
+              </div>
+              <div class="field-body">
+                <div x-html="examples[cur]['response']"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="box content">
+          <h2 id="costs">Costs</h2>
+          <p>SoftEngStudio itself does not take payment, but the OpenAI large language models it uses are not free.  We will ask you to provide an OpenAI API key to be used for your students' queries.</p>
+          <p>Costs are low: OpenAI will charge you roughly US$0.01 for each query made with the default GPT-4o model.  If your students use SoftEngStudio regularly and average 50 queries each over a semester (higher than the average we've observed), your total costs would be roughly $0.50 per student.</p>
+          <p>(The GPT-4o-mini model is also available, and it is much less expensive though also less accurate and helpful.  The same scenario above would cost about $0.02 per student if using GPT-4o-mini.)</p>
+        </div>
+
+        <div class="box content">
+          <h2>References</h2>
+          <p style="text-indent: -1.5em; padding-left: 2em;">
+            [1]
+            <a href="https://arxiv.org/abs/2308.06921">SoftEngStudio: Using Large Language Models with Guardrails for Scalable Support in Programming Classes</a>.<br>
+            Mark Liffiton, Brad Sheese, Jaromir Savelka, and Paul Denny. 2023.
+            In Proceedings of the 23rd Koli Calling International Conference on Computing Education Research (Koli Calling '23).  DOI: <a href="https://doi.org/10.1145/3631802.3631830">10.1145/3631802.3631830</a>
+          </p>
+          <p style="text-indent: -1.5em; padding-left: 2em;">
+            [2]
+            <a href="https://arxiv.org/abs/2310.16984">Patterns of Student Help-Seeking When Using a Large Language Model-Powered Programming Assistant</a>.<br>
+            Brad Sheese, Mark Liffiton, Jaromir Savelka, and Paul Denny. 2024.
+            In Proceedings of the 26th Australasian Computing Education Conference (ACE '24).  DOI: <a href="https://doi.org/10.1145/3636243.3636249">10.1145/3636243.3636249</a>
+          </p>
+        </div>
+
+  </div>
+</section>
+{% endblock %}

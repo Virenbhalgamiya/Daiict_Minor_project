@@ -1,0 +1,90 @@
+{#
+SPDX-FileCopyrightText: 2023 Mark Liffiton <liffiton@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-only
+#}
+
+{% extends "admin_base.html" %}
+{% from "tables.html" import datatable %}
+
+{% block admin_body %}
+  <div class="buttons is-inline">
+    {% for filter in filters %}
+      <a class="button is-info is-rounded p-3" href="{{ filters.filter_string_without(filter.spec.name) | safe }}">
+        {{filter.spec.name}} = {{filter.display_value}}
+        <span class="delete is-small is-link ml-2"></span>
+      </a>
+    {% endfor %}
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+  {% for chart in charts %}
+    <div id="chart_{{loop.index}}" style="width: 1em; min-width: 25em; max-width: 40em; flex-grow: 1;"></div>
+    <script type="module">
+      import {Chart} from "https://cdn.jsdelivr.net/npm/frappe-charts@2.0.0-rc23/dist/frappe-charts.esm.js"
+      new Chart("#chart_{{loop.index}}", {
+        data: {
+          labels: {{chart['labels'] | tojson}},
+          datasets: [
+            {% for series, values in chart['series'].items() %}
+            {name: "{{series}}", type: "line", values: {{values | tojson}}},
+            {% endfor %}
+          ],
+        },
+        type: 'line',
+        height: 200,
+        disableEntryAnimation: true,
+        animate: false,
+        lineOptions: { hideDots: 1 },
+        colors: {{ chart['colors'] | tojson }},
+      })
+    </script>
+  {% endfor %}
+  </div>
+
+  <div class="tbl_cols">
+    <div class="tbl_col" style="width: 50em;">
+      <h1 class="is-size-3">Consumers <a class="button is-light is-link is-small mt-2" href="{{url_for('admin.consumer_new')}}">Create New</a></h1>
+      {{ datatable(
+          'consumers',
+          [('id', 'id'), ('consumer', 'lti_consumer'), ('model', 'model'), ('#classes', 'num_classes', 'r'), ('#users', 'num_users', 'r'), ('#queries', 'num_queries', 'r'), ('1wk', 'num_recent_queries', 'r')],
+          consumers,
+          link_col=0,
+          link_template=filters.template_string('consumer') | safe,
+          extra_links=[{'icon': "pencil", 'text': "Edit consumer", 'handler': "admin.consumer_form", 'param': "consumer_id"}],
+      ) }}
+      <h1 class="is-size-3">Classes</h1>
+      {{ datatable(
+          'classes',
+          [('id', 'id'), ('name', 'name'), ('owner', 'owner'), ('model', 'model'), ('#users', 'num_users', 'r'), ('#queries', 'num_queries', 'r'), ('1wk', 'num_recent_queries', 'r')],
+          classes,
+          link_col=0,
+          link_template=filters.template_string('class') | safe,
+          extra_links=[{'icon': "admin", 'text': "Administer class", 'handler': "classes.switch_class_handler", 'param': "class_id"}],
+      ) }}
+      <h1 class="is-size-3">Users</h1>
+      {{ datatable(
+          'users',
+          [('id', 'id'), ('user', 'display_name'), ('#queries', 'num_queries', 'r'), ('1wk', 'num_recent_queries', 'r'), ('tokens', 'query_tokens', 'r')],
+          users,
+          link_col=0,
+          link_template=filters.template_string('user') | safe,
+      ) }}
+      <h1 class="is-size-3">Roles</h1>
+      {{ datatable(
+          'roles',
+          [('id', 'id'), ('user', 'display_name'), ('role', 'role'), ('class', 'class_name'), ('class owner', 'class_owner')],
+          roles,
+          link_col=0,
+          link_template=filters.template_string('role') | safe,
+      ) }}
+    </div>
+    <div class="tbl_col" style="width: 75em; flex-grow: 1;">
+      <h1 class="is-size-3">
+        Queries
+      </h1>
+      {% block admin_queries %}
+      {% endblock %}
+    </div>
+  </div>
+{% endblock %}

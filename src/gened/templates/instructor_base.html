@@ -1,0 +1,50 @@
+{#
+SPDX-FileCopyrightText: 2023 Mark Liffiton <liffiton@gmail.com>
+
+SPDX-License-Identifier: AGPL-3.0-only
+#}
+
+{% extends "base.html" %}
+{% from "tables.html" import datatable %}
+
+{% block body %}
+<section class="section p-5">
+  <h1 class="title">{{ auth['class_name'] }}</h1>
+  <div class="tbl_cols">
+    <div class="tbl_col" style="width: 35em;">
+      <h2 class="is-size-3">Users</h2>
+      {{ datatable(
+           'users',
+           [
+             ('id', 'id'),
+             ('user', 'display_name'),
+             ('#queries', 'num_queries', 'r'),
+             ('1wk', 'num_recent_queries', 'r'),
+             ('active?', 'active', 'b', 'instructor.set_role_active'),
+             ('instructor?', 'instructor_role', 'b', 'instructor.set_role_instructor')
+           ],
+           users,
+           hidden_cols=['id'],
+           link_col=0,
+           link_template="?user=${value}",
+           csv_link=url_for("instructor.get_csv", kind="users")
+         )
+      }}
+      <p><em>Users that are not active will not be able to access this class.</em></p>
+    </div>
+    <div class="tbl_col" style="width: 75em; flex-grow: 1;">
+      <h2 class="is-size-3">
+        Queries
+        {% if user %}
+        <a class="button is-info is-rounded p-3 mt-2" style="height: 2em;" href="?" title="Remove filter">
+          user = {{user}}
+          <span class="delete is-small is-link ml-2"></span>
+        </a>
+        {% endif %}
+      </h2>
+      {% block instructor_queries %}
+      {% endblock %}
+    </div>
+  </div>
+</section>
+{% endblock %}
