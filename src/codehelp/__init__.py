@@ -19,10 +19,10 @@ def create_app(test_config: dict[str, Any] | None = None, instance_path: Path | 
     # App-specific configuration
     module_dir = Path(__file__).resolve().parent
     app_config = dict(
-        APPLICATION_TITLE='SoftEngStudio',
-        APPLICATION_AUTHOR='Abhay',
+        APPLICATION_TITLE='VirtualTa',
+        APPLICATION_AUTHOR='Viren',
         FAVICON='icon.png',
-        SUPPORT_EMAIL='support@SoftEngStudio.app',
+        SUPPORT_EMAIL='support@VirtualTa.app',
         HELP_LINK_TEXT='Get Help',
         DATABASE_NAME='codehelp.db',  # will be combined with app.instance_path in gened.create_app_base()
         DOCS_DIR=module_dir / 'docs',
