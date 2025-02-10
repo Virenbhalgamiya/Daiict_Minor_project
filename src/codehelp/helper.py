@@ -50,7 +50,7 @@ bp = Blueprint('helper', __name__, url_prefix="/help", template_folder='template
 def help_form(llm: LLMConfig, query_id: int | None = None, class_id: int | None = None, ctx_name: str | None = None) -> str | Response:
     db = get_db()
     auth = get_auth()
-
+    print("help_form calleddd")
     if class_id is not None:
         success = switch_class(class_id)
         if not success:
@@ -229,6 +229,7 @@ def record_response(query_id: int, responses: list[dict[str, str]], texts: dict[
 @class_enabled_required
 @with_llm(spend_token=True)
 def help_request(llm: LLMConfig) -> Response:
+    print("help_request is callled...................")
     if 'context' in request.form:
         context = get_context_by_name(request.form['context'])
         if context is None:

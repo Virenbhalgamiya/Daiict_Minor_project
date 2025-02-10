@@ -37,7 +37,7 @@ def create_app(test_config: dict[str, Any] | None = None, instance_path: Path | 
             "Rust",
         ],
     )
-
+    print("App is created")
     # load test config if provided, potentially overriding above config
     if test_config is not None:
         app_config = app_config | test_config
